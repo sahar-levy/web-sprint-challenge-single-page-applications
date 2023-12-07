@@ -1,6 +1,29 @@
 import React, { useState } from "react";
+import * as yup from 'yup';
 
 const PizzaForm = () => {
+    // form validation using yup
+    const formSchema = yup.object().shape({
+        customerName: yup
+            .string()
+            .trim()
+            .min(2, 'name must be at least 2 characters'),
+        pizzaSize: yup
+            .string()
+            .oneOf(['small', 'medium', 'large'], 'Select a size'),
+        pepperoni: yup
+            .boolean(),
+        veggies: yup
+            .boolean(),
+        ricottaCheese: yup
+            .boolean(),
+        pineapple: yup
+            .boolean(),
+        specialInstructions: yup
+            .string()
+            .max(20)
+    });
+
     const [formValues, setFormValues] = useState({
         customerName: '',
         pizzaSize: '',
@@ -11,6 +34,16 @@ const PizzaForm = () => {
         specialInstructions: ''
     })
 
+    const [errors, setErrors] = useState({
+        customerName: '',
+        pizzaSize: '',
+        pepperoni: '',
+        veggies: '',
+        ricottaCheese: '',
+        pineapple: '',
+        specialInstructions: ''
+    })
+
     const onChange = (evt) => {
         let { name, type, value, checked } = evt.target;
 
@@ -18,6 +51,19 @@ const PizzaForm = () => {
             [name]: type === 'checkbox' ? checked : value
         });
         
+        yup.reach(formSchema, name)
+            .validate(value)
+            .then(valid => {
+                setErrors({
+                    ...errors, [name]: ''
+                })
+            })
+            .catch(err => {
+                setErrors({
+                    ...errors, [name]: err.errors[0]
+                })
+            })
+            console.log(value)
     }
 
     const handleSubmit = (evt) => {
@@ -27,7 +73,6 @@ const PizzaForm = () => {
 
     return (
         <>
-            <img src="./Assets/Pizza.jpg" alt="pizza" />
             <h2>Build Your 'Za</h2>
 
             <form id='pizza-form' onSubmit={handleSubmit}>
@@ -41,6 +86,7 @@ const PizzaForm = () => {
                         placeholder='your name here'
                         onChange={onChange}
                     />
+                    <p>{errors.customerName}</p>
                 </label> 
                 <br />
                 <label>'Za Size
@@ -63,7 +109,6 @@ const PizzaForm = () => {
                         <input 
                             type='checkbox'
                             name='veggies'
-                            // checked={}
                             onChange={onChange}
                         />
                     </label>Veggies
@@ -72,7 +117,6 @@ const PizzaForm = () => {
                         <input
                             type='checkbox'
                             name='pepperoni'
-                            // checked={}
                             onChange={onChange}
                         />
                     </label>Pepperoni
@@ -81,7 +125,6 @@ const PizzaForm = () => {
                         <input
                             type='checkbox'
                             name='pineapple'
-                            // checked={}
                             onChange={onChange}
                         />
                     </label>Pineapple
@@ -89,8 +132,7 @@ const PizzaForm = () => {
                     <label>
                         <input 
                             type='checkbox'
-                            name='ricotta-cheese'
-                            // checked={}
+                            name='ricottaCheese'
                             onChange={onChange}
                         />
                     </label>Ricotta Cheese
